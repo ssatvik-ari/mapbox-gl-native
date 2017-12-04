@@ -6,30 +6,29 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
-
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory;
 import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.mapbox.mapboxsdk.maps.MapView;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
 import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
-import com.mapbox.mapboxsdk.style.functions.stops.Stops;
 import com.mapbox.mapboxsdk.style.layers.FillLayer;
 import com.mapbox.mapboxsdk.style.sources.GeoJsonSource;
 import com.mapbox.mapboxsdk.style.sources.Source;
 import com.mapbox.mapboxsdk.testapp.R;
 import com.mapbox.mapboxsdk.testapp.utils.ResourceUtils;
+import timber.log.Timber;
 
 import java.io.IOException;
 
-import timber.log.Timber;
+import static com.mapbox.mapboxsdk.style.expressions.Expression.color;
+import static com.mapbox.mapboxsdk.style.expressions.Expression.exponential;
+import static com.mapbox.mapboxsdk.style.expressions.Expression.get;
+import static com.mapbox.mapboxsdk.style.expressions.Expression.interpolate;
+import static com.mapbox.mapboxsdk.style.expressions.Expression.linear;
+import static com.mapbox.mapboxsdk.style.expressions.Expression.match;
+import static com.mapbox.mapboxsdk.style.expressions.Expression.step;
+import static com.mapbox.mapboxsdk.style.expressions.Expression.zoom;
 
-import static com.mapbox.mapboxsdk.style.functions.Function.composite;
-import static com.mapbox.mapboxsdk.style.functions.Function.property;
-import static com.mapbox.mapboxsdk.style.functions.Function.zoom;
-import static com.mapbox.mapboxsdk.style.functions.stops.Stop.stop;
-import static com.mapbox.mapboxsdk.style.functions.stops.Stops.categorical;
-import static com.mapbox.mapboxsdk.style.functions.stops.Stops.exponential;
-import static com.mapbox.mapboxsdk.style.functions.stops.Stops.interval;
 import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.fillAntialias;
 import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.fillColor;
 import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.fillOpacity;
@@ -159,16 +158,28 @@ public class DataDrivenStyleActivity extends AppCompatActivity {
     assert layer != null;
     layer.setProperties(
       fillColor(
-        zoom(
-          exponential(
-            stop(1, fillColor(Color.RED)),
-            stop(5, fillColor(Color.BLUE)),
-            stop(10, fillColor(Color.GREEN))
-          ).withBase(0.5f)
+        interpolate(
+          exponential(0.5f), zoom(),
+          1, color(Color.RED),
+          5, color(Color.BLUE),
+          10, color(Color.GREEN)
         )
       )
     );
 
+    // Deprecated API
+    //
+    //    layer.setProperties(
+    //      fillColor(
+    //        Function.zoom(
+    //          Stops.exponential(
+    //            stop(1, fillColor(Color.RED)),
+    //            stop(5, fillColor(Color.BLUE)),
+    //            stop(10, fillColor(Color.GREEN))
+    //          ).withBase(0.5f)
+    //        )
+    //      )
+    //    );
     Timber.i("Fill color: %s", layer.getFillColor());
   }
 
@@ -178,16 +189,27 @@ public class DataDrivenStyleActivity extends AppCompatActivity {
     assert layer != null;
     layer.setProperties(
       fillColor(
-        zoom(
-          interval(
-            stop(1, fillColor(Color.RED)),
-            stop(5, fillColor(Color.BLUE)),
-            stop(10, fillColor(Color.GREEN))
-          )
-        )
+        step(zoom(),
+          color(Color.CYAN),
+          1, color(Color.RED),
+          5, color(Color.BLUE),
+          10, color(Color.GREEN))
       )
     );
 
+    // Deprecated API
+    //
+    //    layer.setProperties(
+    //      fillColor(
+    //        Function.zoom(
+    //          interval(
+    //            stop(1, fillColor(Color.RED)),
+    //            stop(5, fillColor(Color.BLUE)),
+    //            stop(10, fillColor(Color.GREEN))
+    //          )
+    //        )
+    //      )
+    //    );
     Timber.i("Fill color: %s", layer.getFillColor());
   }
 
@@ -197,17 +219,30 @@ public class DataDrivenStyleActivity extends AppCompatActivity {
     assert layer != null;
     layer.setProperties(
       fillColor(
-        property(
-          "stroke-width",
-          exponential(
-            stop(1f, fillColor(Color.RED)),
-            stop(5f, fillColor(Color.BLUE)),
-            stop(10f, fillColor(Color.GREEN))
-          ).withBase(0.5f)
+        interpolate(
+          exponential(0.5f),
+          get("stroke-width"),
+          1f, color(Color.RED),
+          5f, color(Color.BLUE),
+          10f, color(Color.GREEN)
         )
       )
     );
 
+    // Deprecated API
+    //
+    //    layer.setProperties(
+    //      fillColor(
+    //        property(
+    //          "stroke-width",
+    //          Stops.exponential(
+    //            stop(1f, fillColor(Color.RED)),
+    //            stop(5f, fillColor(Color.BLUE)),
+    //            stop(10f, fillColor(Color.GREEN))
+    //          ).withBase(0.5f)
+    //        )
+    //      )
+    //    );
     Timber.i("Fill color: %s", layer.getFillColor());
   }
 
@@ -217,16 +252,29 @@ public class DataDrivenStyleActivity extends AppCompatActivity {
     assert layer != null;
     layer.setProperties(
       fillColor(
-        property(
-          "name",
-          categorical(
-            stop("Westerpark", fillColor(Color.RED)),
-            stop("Jordaan", fillColor(Color.BLUE)),
-            stop("Prinseneiland", fillColor(Color.GREEN))
-          ))
+        match(
+          get("name"),
+          "Westerpark", color(Color.RED),
+          "Jordaan", color(Color.BLUE),
+          "Prinseneiland", color(Color.GREEN),
+          color(Color.CYAN)
+        )
       )
     );
 
+    // Deprecated API
+    //
+    //    layer.setProperties(
+    //      fillColor(
+    //        property(
+    //          "name",
+    //          categorical(
+    //            stop("Westerpark", fillColor(Color.RED)),
+    //            stop("Jordaan", fillColor(Color.BLUE)),
+    //            stop("Prinseneiland", fillColor(Color.GREEN))
+    //          ))
+    //      )
+    //    );
     Timber.i("Fill color: %s", layer.getFillColor());
   }
 
@@ -236,12 +284,20 @@ public class DataDrivenStyleActivity extends AppCompatActivity {
     assert layer != null;
     layer.setProperties(
       fillOpacity(
-        property(
-          "fill-opacity",
-          Stops.<Float>identity())
+        get("fill-opacity")
       )
     );
 
+    // Deprecated API
+    //
+    //    layer.setProperties(
+    //      fillOpacity(
+    //        property(
+    //          "fill-opacity",
+    //          Stops.<Float>identity())
+    //      )
+    //    );
+    //
     Timber.i("Fill opacity: %s", layer.getFillOpacity());
   }
 
@@ -251,16 +307,29 @@ public class DataDrivenStyleActivity extends AppCompatActivity {
     assert layer != null;
     layer.setProperties(
       fillColor(
-        property(
-          "stroke-width",
-          interval(
-            stop(1f, fillColor(Color.RED)),
-            stop(5f, fillColor(Color.BLUE)),
-            stop(10f, fillColor(Color.GREEN))
-          ))
+        step(
+          get("stroke-width"),
+          color(Color.CYAN),
+          1f, color(Color.RED),
+          2f, color(Color.BLUE),
+          3f, color(Color.GREEN)
+        )
       )
     );
 
+    // Deprecated API
+    //
+    //    layer.setProperties(
+    //      fillColor(
+    //        property(
+    //          "stroke-width",
+    //          interval(
+    //            stop(1f, fillColor(Color.RED)),
+    //            stop(5f, fillColor(Color.BLUE)),
+    //            stop(10f, fillColor(Color.GREEN))
+    //          ))
+    //      )
+    //    );
     Timber.i("Fill color: %s", layer.getFillColor());
   }
 
@@ -270,42 +339,104 @@ public class DataDrivenStyleActivity extends AppCompatActivity {
     assert layer != null;
     layer.setProperties(
       fillColor(
-        composite(
-          "stroke-width",
-          exponential(
-            stop(1, 1, fillColor(Color.RED)),
-            stop(10, 2, fillColor(Color.BLUE)),
-            stop(22, 3, fillColor(Color.GREEN)),
-            stop(1, 1, fillColor(Color.CYAN)),
-            stop(10, 2, fillColor(Color.GRAY)),
-            stop(22, 3, fillColor(Color.YELLOW))
-          ).withBase(1f)
+        interpolate(
+          exponential(1f),
+          zoom(),
+          12, step(
+            get("stroke-width"),
+            color(Color.BLACK),
+            1f, color(Color.RED),
+            2f, color(Color.WHITE),
+            3f, color(Color.BLUE)
+          ),
+          15, step(
+            get("stroke-width"),
+            color(Color.BLACK),
+            1f, color(Color.YELLOW),
+            2f, color(Color.LTGRAY),
+            3f, color(Color.CYAN)
+          ),
+          18, step(
+            get("stroke-width"),
+            color(Color.BLACK),
+            1f, color(Color.WHITE),
+            2f, color(Color.GRAY),
+            3f, color(Color.GREEN)
+          )
         )
       )
     );
 
+    // Deprecated API
+    //
+    //    layer.setProperties(
+    //      fillColor(
+    //        composite(
+    //          "stroke-width",
+    //          Stops.exponential(
+    //            stop(1, 1, fillColor(Color.RED)),
+    //            stop(10, 2, fillColor(Color.BLUE)),
+    //            stop(22, 3, fillColor(Color.GREEN)),
+    //            stop(1, 1, fillColor(Color.CYAN)),
+    //            stop(10, 2, fillColor(Color.GRAY)),
+    //            stop(22, 3, fillColor(Color.YELLOW))
+    //          ).withBase(1f)
+    //        )
+    //      )
+    //    );
     Timber.i("Fill color: %s", layer.getFillColor());
   }
 
   private void addCompositeIntervalFunction() {
-    Timber.i("Add composite exponential function");
+    Timber.i("Add composite interval function");
     FillLayer layer = mapboxMap.getLayerAs(AMSTERDAM_PARKS_LAYER);
     assert layer != null;
     layer.setProperties(
       fillColor(
-        composite(
-          "stroke-width",
-          interval(
-            stop(1, 1, fillColor(Color.RED)),
-            stop(10, 2, fillColor(Color.BLUE)),
-            stop(22, 3, fillColor(Color.GREEN)),
-            stop(1, 1, fillColor(Color.CYAN)),
-            stop(10, 2, fillColor(Color.GRAY)),
-            stop(22, 3, fillColor(Color.YELLOW))
-          ))
+        interpolate(
+          linear(),
+          zoom(),
+          12, step(
+            get("stroke-width"),
+            color(Color.BLACK),
+            1f, color(Color.RED),
+            2f, color(Color.WHITE),
+            3f, color(Color.BLUE)
+          ),
+          15, step(
+            get("stroke-width"),
+            color(Color.BLACK),
+            1f, color(Color.YELLOW),
+            2f, color(Color.LTGRAY),
+            3f, color(Color.CYAN)
+          ),
+          18, step(
+            get("stroke-width"),
+            color(Color.BLACK),
+            1f, color(Color.WHITE),
+            2f, color(Color.GRAY),
+            3f, color(Color.GREEN)
+          )
+        )
       )
     );
 
+    // Deprecated API
+    //
+    //    layer.setProperties(
+    //      fillColor(
+    //        composite(
+    //          "stroke-width",
+    //          interval(
+    //            stop(1, 1, fillColor(Color.RED)),
+    //            stop(10, 2, fillColor(Color.BLUE)),
+    //            stop(22, 3, fillColor(Color.GREEN)),
+    //            stop(1, 1, fillColor(Color.CYAN)),
+    //            stop(10, 2, fillColor(Color.GRAY)),
+    //            stop(22, 3, fillColor(Color.YELLOW))
+    //          ))
+    //      )
+    //    );
     Timber.i("Fill color: %s", layer.getFillColor());
   }
 
@@ -315,33 +446,125 @@ public class DataDrivenStyleActivity extends AppCompatActivity {
     assert layer != null;
     layer.setProperties(
       fillColor(
-        composite(
-          "name",
-          categorical(
-            stop(7f, "Westerpark", fillColor(Color.RED)),
-            stop(8f, "Westerpark", fillColor(Color.BLUE)),
-            stop(9f, "Westerpark", fillColor(Color.RED)),
-            stop(10f, "Westerpark", fillColor(Color.BLUE)),
-            stop(11f, "Westerpark", fillColor(Color.RED)),
-            stop(12f, "Westerpark", fillColor(Color.BLUE)),
-            stop(13f, "Westerpark", fillColor(Color.RED)),
-            stop(14f, "Westerpark", fillColor(Color.BLUE)),
-            stop(15f, "Westerpark", fillColor(Color.RED)),
-            stop(16f, "Westerpark", fillColor(Color.BLUE)),
-            stop(17f, "Westerpark", fillColor(Color.RED)),
-            stop(18f, "Westerpark", fillColor(Color.BLUE)),
-            stop(19f, "Westerpark", fillColor(Color.RED)),
-            stop(20f, "Westerpark", fillColor(Color.BLUE)),
-            stop(21f, "Westerpark", fillColor(Color.RED)),
-            stop(22f, "Westerpark", fillColor(Color.BLUE)),
-            stop(14f, "Jordaan", fillColor(Color.GREEN)),
-            stop(18f, "Jordaan", fillColor(Color.CYAN)),
-            stop(14f, "Prinseneiland", fillColor(Color.WHITE)),
-            stop(18f, "Prinseneiland", fillColor(Color.BLACK))
-          ))
+        step(zoom(),
+          color(Color.BLACK),
+          7f, match(
+            get("name"),
+            "Westerpark", color(Color.RED),
+            color(Color.BLACK)
+          ),
+          8f, match(
+            get("name"),
+            "Westerpark", color(Color.BLUE),
+            color(Color.BLACK)
+          ),
+          9f, match(
+            get("name"),
+            "Westerpark", color(Color.RED),
+            color(Color.BLACK)
+          ),
+          10f, match(
+            get("name"),
+            "Westerpark", color(Color.BLUE),
+            color(Color.BLACK)
+          ),
+          11f, match(
+            get("name"),
+            "Westerpark", color(Color.RED),
+            color(Color.BLACK)
+          ),
+          12f, match(
+            get("name"),
+            "Westerpark", color(Color.BLUE),
+            color(Color.BLACK)
+          ),
+          13f, match(
+            get("name"),
+            "Westerpark", color(Color.RED),
+            color(Color.BLACK)
+          ),
+          14f, match(
+            get("name"),
+            "Westerpark", color(Color.BLUE),
+            "Jordaan", color(Color.GREEN),
+            "PrinsenEiland", color(Color.WHITE),
+            color(Color.BLACK)
+          ),
+          15f, match(
+            get("name"),
+            "Westerpark", color(Color.RED),
+            color(Color.BLACK)
+          ),
+          16f, match(
+            get("name"),
+            "Westerpark", color(Color.BLUE),
+            color(Color.BLACK)
+          ),
+          17f, match(
+            get("name"),
+            "Westerpark", color(Color.RED),
+            color(Color.BLACK)
+          ),
+          18f, match(
+            get("name"),
+            "Westerpark", color(Color.BLUE),
+            "Jordaan", color(Color.CYAN),
+            color(Color.BLACK)
+          ),
+          19f, match(
+            get("name"),
+            "Westerpark", color(Color.RED),
+            color(Color.BLACK)
+          ),
+          20f, match(
+            get("name"),
+            "Westerpark", color(Color.BLUE),
+            color(Color.BLACK)
+          ),
+          21f, match(
+            get("name"),
+            "Westerpark", color(Color.RED),
+            color(Color.BLACK)
+          ),
+          20f, match(
+            get("name"),
+            "Westerpark", color(Color.BLUE),
+            color(Color.BLACK)
+          )
+        )
       )
     );
 
+    // Deprecated API
+    //
+    //    layer.setProperties(
+    //      fillColor(
+    //        composite(
+    //          "name",
+    //          categorical(
+    //            stop(7f, "Westerpark", fillColor(Color.RED)),
+    //            stop(8f, "Westerpark", fillColor(Color.BLUE)),
+    //            stop(9f, "Westerpark", fillColor(Color.RED)),
+    //            stop(10f, "Westerpark", fillColor(Color.BLUE)),
+    //            stop(11f, "Westerpark", fillColor(Color.RED)),
+    //            stop(12f, "Westerpark", fillColor(Color.BLUE)),
+    //            stop(13f, "Westerpark", fillColor(Color.RED)),
+    //            stop(14f, "Westerpark", fillColor(Color.BLUE)),
+    //            stop(15f, "Westerpark", fillColor(Color.RED)),
+    //            stop(16f, "Westerpark", fillColor(Color.BLUE)),
+    //            stop(17f, "Westerpark", fillColor(Color.RED)),
+    //            stop(18f, "Westerpark", fillColor(Color.BLUE)),
+    //            stop(19f, "Westerpark", fillColor(Color.RED)),
+    //            stop(20f, "Westerpark", fillColor(Color.BLUE)),
+    //            stop(21f, "Westerpark", fillColor(Color.RED)),
+    //            stop(22f, "Westerpark", fillColor(Color.BLUE)),
+    //            stop(14f, "Jordaan", fillColor(Color.GREEN)),
+    //            stop(18f, "Jordaan", fillColor(Color.CYAN)),
+    //            stop(14f, "Prinseneiland", fillColor(Color.WHITE)),
+    //            stop(18f, "Prinseneiland", fillColor(Color.BLACK))
+    //          ))
+    //      )
+    //    );
     Timber.i("Fill color: %s", layer.getFillColor());
   }
 
