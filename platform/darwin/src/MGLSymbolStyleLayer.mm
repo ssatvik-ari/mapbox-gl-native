@@ -8,8 +8,12 @@
 #import "MGLStyleValue_Private.h"
 #import "MGLSymbolStyleLayer.h"
 
+#import "NSExpression+MGLAdditions.h"
+
 #include <mbgl/style/transition_options.hpp>
 #include <mbgl/style/layers/symbol_layer.hpp>
+#include <mbgl/style/expression/expression.hpp>
+#include <mbgl/style/conversion/expression.hpp>
 
 namespace mbgl {
 
@@ -564,27 +568,30 @@ namespace mbgl {
     return MGLStyleValueTransformer<float, NSNumber *>().toStyleValue(propertyValue);
 }
 
-- (void)setText:(MGLStyleValue<NSString *> *)text {
-    MGLAssertStyleLayerIsValid();
+- (void)setText:(NSExpression *)text {
+    NSArray *expressionArray = text.mgl_expressionArray;
+    mbgl::style::conversion::Error expressionError;
+    auto expression = mbgl::style::conversion::convert<std::unique_ptr<mbgl::style::expression::Expression>>(
+        mbgl::style::conversion::makeConvertible(expressionArray), expressionError, mbgl::style::expression::type::String);
+    NSAssert(expression, @(expressionError.message.c_str()));
 
-    auto mbglValue = MGLStyleValueTransformer<std::string, NSString *>().toDataDrivenPropertyValue(text);
-    self.rawLayer->setTextField(mbglValue);
+    mbgl::style::conversion::Error valueError;
+    auto value = mbgl::style::conversion::convert<mbgl::style::DataDrivenPropertyValue<std::string>>(
+        expression, valueError);
+    NSAssert(value, @(valueError.message.c_str()));
+
+    self.rawLayer->setTextField(*value);
 }
 
-- (MGLStyleValue<NSString *> *)text {
-    MGLAssertStyleLayerIsValid();
-
-    auto propertyValue = self.rawLayer->getTextField();
-    if (propertyValue.isUndefined()) {
-        return MGLStyleValueTransformer<std::string, NSString *>().toDataDrivenStyleValue(self.rawLayer->getDefaultTextField());
-    }
-    return MGLStyleValueTransformer<std::string, NSString *>().toDataDrivenStyleValue(propertyValue);
+- (NSExpression *)text {
+#pragma warning Convert to NSExpression.
+    return nil;
 }
 
-- (void)setTextField:(MGLStyleValue<NSString *> *)textField {
+- (void)setTextField:(NSExpression *)textField {
 }
 
-- (MGLStyleValue<NSString *> *)textField {
+- (NSExpression *)textField {
     return self.text;
 }
 
