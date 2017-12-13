@@ -191,8 +191,12 @@ public final class UiSettings {
   }
 
   private Drawable decode(byte[] bitmap) {
-    Bitmap compass = BitmapFactory.decodeByteArray(bitmap, 0, bitmap.length);
-    return new BitmapDrawable(compassView.getResources(), compass);
+    try {
+      Bitmap compass = BitmapFactory.decodeByteArray(bitmap, 0, bitmap.length);
+      return new BitmapDrawable(compassView.getResources(), compass);
+    } catch (NullPointerException exception) {
+      return compassView.getResources().getDrawable(R.drawable.mapbox_compass_icon);
+    }
   }
 
   private void initialiseLogo(MapboxMapOptions options, Resources resources) {
