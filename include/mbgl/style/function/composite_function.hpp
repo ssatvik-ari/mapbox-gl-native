@@ -107,6 +107,8 @@ public:
         return *lhs.expression == *rhs.expression;
     }
 
+    std::shared_ptr<expression::Expression> getExpression() { return expression; }
+    
     std::string property;
     Stops stops;
     optional<T> defaultValue;

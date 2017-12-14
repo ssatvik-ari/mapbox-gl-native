@@ -569,23 +569,30 @@ namespace mbgl {
 }
 
 - (void)setText:(NSExpression *)text {
-    NSArray *expressionArray = text.mgl_expressionArray;
-    mbgl::style::conversion::Error expressionError;
-    auto expression = mbgl::style::conversion::convert<std::unique_ptr<mbgl::style::expression::Expression>>(
-        mbgl::style::conversion::makeConvertible(expressionArray), expressionError, mbgl::style::expression::type::String);
-    NSAssert(expression, @(expressionError.message.c_str()));
-
-    mbgl::style::conversion::Error valueError;
-    auto value = mbgl::style::conversion::convert<mbgl::style::DataDrivenPropertyValue<std::string>>(
-        expression, valueError);
-    NSAssert(value, @(valueError.message.c_str()));
-
-    self.rawLayer->setTextField(*value);
+#warning Convert to Expression.
+//    NSArray *jsonExpression = text.mgl_jsonExpressionObject;
+//    mbgl::style::conversion::Error expressionError;
+//    auto expression = mbgl::style::conversion::convert<std::unique_ptr<mbgl::style::expression::Expression>>(
+//        mbgl::style::conversion::makeConvertible(jsonExpression), expressionError, mbgl::style::expression::type::String);
+//    NSAssert(expression, @(expressionError.message.c_str()));
+//
+//    mbgl::style::conversion::Error valueError;
+//    auto value = mbgl::style::conversion::convert<mbgl::style::DataDrivenPropertyValue<std::string>>(
+//        expression, valueError);
+//    NSAssert(value, @(valueError.message.c_str()));
+//
+//    self.rawLayer->setTextField(*value);
 }
 
 - (NSExpression *)text {
-#pragma warning Convert to NSExpression.
-    return nil;
+#warning Convert to NSExpression.
+    MGLAssertStyleLayerIsValid();
+
+    auto propertyValue = self.rawLayer->getTextField();
+    if (propertyValue.isUndefined()) {
+        propertyValue = self.rawLayer->getDefaultTextField();
+    }
+    return MGLStyleValueTransformer<std::string, NSString *>().toExpression(propertyValue);
 }
 
 - (void)setTextField:(NSExpression *)textField {

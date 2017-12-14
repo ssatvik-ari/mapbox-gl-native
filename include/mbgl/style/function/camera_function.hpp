@@ -74,6 +74,8 @@ public:
 
     bool useIntegerZoom = false;
     
+    std::shared_ptr<expression::Expression> getExpression() { return expression; }
+    
     // retained for compatibility with pre-expression function API
     Stops stops;
 
