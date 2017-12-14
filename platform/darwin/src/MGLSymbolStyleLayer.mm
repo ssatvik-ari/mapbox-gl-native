@@ -12,8 +12,7 @@
 
 #include <mbgl/style/transition_options.hpp>
 #include <mbgl/style/layers/symbol_layer.hpp>
-#include <mbgl/style/expression/expression.hpp>
-#include <mbgl/style/conversion/expression.hpp>
+#include <mbgl/style/expression/parsing_context.hpp>
 
 namespace mbgl {
 
@@ -569,19 +568,15 @@ namespace mbgl {
 }
 
 - (void)setText:(NSExpression *)text {
-#warning Convert to Expression.
-//    NSArray *jsonExpression = text.mgl_jsonExpressionObject;
-//    mbgl::style::conversion::Error expressionError;
-//    auto expression = mbgl::style::conversion::convert<std::unique_ptr<mbgl::style::expression::Expression>>(
-//        mbgl::style::conversion::makeConvertible(jsonExpression), expressionError, mbgl::style::expression::type::String);
-//    NSAssert(expression, @(expressionError.message.c_str()));
-//
-//    mbgl::style::conversion::Error valueError;
-//    auto value = mbgl::style::conversion::convert<mbgl::style::DataDrivenPropertyValue<std::string>>(
-//        expression, valueError);
-//    NSAssert(value, @(valueError.message.c_str()));
-//
-//    self.rawLayer->setTextField(*value);
+    NSArray *jsonExpression = text.mgl_jsonExpressionObject;
+    
+    using namespace mbgl::style;
+    conversion::Error valueError;
+    auto value = conversion::convert<DataDrivenPropertyValue<std::string>>(
+        conversion::makeConvertible(jsonExpression), valueError);
+    NSAssert(value, @(valueError.message.c_str()));
+
+    self.rawLayer->setTextField(*value);
 }
 
 - (NSExpression *)text {
