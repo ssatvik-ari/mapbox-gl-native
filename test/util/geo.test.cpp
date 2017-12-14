@@ -301,6 +301,25 @@ TEST(LatLngBounds, ContainsBounds_Wrapped) {
     EXPECT_TRUE(bounds.contains(unwrapped, LatLng::Wrapped));
 }
 
+TEST(LatLngBounds, Contains_TileID) {
+    {
+        const LatLngBounds bounds = LatLngBounds::world();
+        EXPECT_TRUE(bounds.contains(CanonicalTileID(0,0,0)));
+        EXPECT_TRUE(bounds.contains(CanonicalTileID(10,163,395)));
+    }
+    {
+        const LatLngBounds bounds{ CanonicalTileID(10, 162, 395) };
+        EXPECT_TRUE(bounds.contains(CanonicalTileID(0,0,0)));
+        EXPECT_TRUE(bounds.contains(CanonicalTileID(10,162,395)));
+        EXPECT_TRUE(bounds.contains(CanonicalTileID(11, 324, 790)));
+    }
+    {
+        auto bounds = LatLngBounds::hull({37.7, -122.5}, {37.8, -122.4});
+        EXPECT_FALSE(bounds.contains(CanonicalTileID(10,162,395)));
+        EXPECT_TRUE(bounds.contains(CanonicalTileID(13, 1310, 3166)));
+
+    }
+}
 TEST(LatLngBounds, ContainsTileIDs) {
     LatLngBounds bounds(CanonicalTileID(4,2,6));
     LatLngBounds innerBounds(CanonicalTileID(9,82,197));
